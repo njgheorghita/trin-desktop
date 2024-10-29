@@ -1,17 +1,16 @@
 use ethportal_api::jsonrpsee::http_client::HttpClientBuilder;
 use ethportal_api::Web3ApiClient;
 use log::{info, warn};
-use netstat2::{get_sockets_info, AddressFamilyFlags, ProtocolFlags};
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use std::sync::Mutex;
 use std::thread::sleep;
 use std::time::Duration;
-use sysinfo::{Pid, Process, System};
+use sysinfo::{Pid, System};
 use tauri::async_runtime::JoinHandle;
+use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
-use tauri::{ipc::Channel, AppHandle, Emitter};
+use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
 
@@ -45,6 +44,9 @@ struct AppData {
 
 // this is the jsonrpc request used to make sure
 // that the trin node is running
+// ... hmm. ok this might not be the best way to check that
+// the trin node is running. eg. the node will respond even if
+// it is not connected to the network (aka error binding to udp socket)
 async fn check_trin_status(http_port: &usize) -> bool {
     let endpoint = format!("http://localhost:{}", http_port);
     let client = HttpClientBuilder::default().build(&endpoint).unwrap();
@@ -131,7 +133,7 @@ async fn launch_trin<'l>(
                 process_count += 1;
 
                 // Get all processes to check for children
-                for (pid_check, process_check) in sys.processes() {
+                for (_pid_check, process_check) in sys.processes() {
                     if process_check.parent() == Some(pid) {
                         total_cpu += process_check.cpu_usage();
                         process_count += 1;
@@ -170,10 +172,7 @@ async fn launch_trin<'l>(
 }
 
 #[tauri::command]
-async fn shutdown_trin<'l>(
-    app: tauri::AppHandle,
-    app_data: State<'l, AppData>,
-) -> Result<String, String> {
+async fn shutdown_trin<'l>(app_data: State<'l, AppData>) -> Result<String, String> {
     info!("stopping trin");
     let mut trin_handle = app_data.trin_handle.lock().unwrap();
     if let Some(child) = trin_handle.take() {
@@ -199,6 +198,11 @@ async fn shutdown_trin<'l>(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            // args that are passed to your app on startup
+            None,
+        ))
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Info)

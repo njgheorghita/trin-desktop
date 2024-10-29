@@ -1,10 +1,10 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { NumberFieldInput } from 'radix-vue';
+import { cn } from '@/lib/utils'
+import { NumberFieldInput } from 'radix-vue'
 
 const props = defineProps({
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const props = defineProps({
     :class="
       cn(
         'flex h-9 w-full rounded-md border border-input bg-transparent py-1 text-sm text-center shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-        props.class,
+        props.class
       )
     "
   />

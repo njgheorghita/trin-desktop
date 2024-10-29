@@ -1,5 +1,5 @@
 // composables/useTheme.js
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted } from 'vue'
 
 export function useTheme() {
   const isDark = ref(document.documentElement.classList.contains('dark'))

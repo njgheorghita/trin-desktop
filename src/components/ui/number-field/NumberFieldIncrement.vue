@@ -1,23 +1,23 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { Plus } from 'lucide-vue-next';
-import { NumberFieldIncrement, useForwardProps } from 'radix-vue';
-import { computed } from 'vue';
+import { cn } from '@/lib/utils'
+import { Plus } from 'lucide-vue-next'
+import { NumberFieldIncrement, useForwardProps } from 'radix-vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   disabled: { type: Boolean, required: false },
   asChild: { type: Boolean, required: false },
   as: { type: null, required: false },
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
+  const { class: _, ...delegated } = props
 
-  return delegated;
-});
+  return delegated
+})
 
-const forwarded = useForwardProps(delegatedProps);
+const forwarded = useForwardProps(delegatedProps)
 </script>
 
 <template>
@@ -27,7 +27,7 @@ const forwarded = useForwardProps(delegatedProps);
     :class="
       cn(
         'absolute top-1/2 -translate-y-1/2 right-0 disabled:cursor-not-allowed disabled:opacity-20 p-3',
-        props.class,
+        props.class
       )
     "
   >
