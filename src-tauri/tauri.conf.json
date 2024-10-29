@@ -31,8 +31,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-	"externalBin": [
-	  "./assets/trin"
-	]
+    "externalBin": ["./binaries/trin-v0.1.0-alpha.53"]
   }
 }
