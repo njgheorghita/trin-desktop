@@ -1,11 +1,15 @@
 <script setup>
+import { Button } from '@/components/ui/button'
+import { Icon } from '@iconify/vue'
+import { useColorMode } from '@vueuse/core'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Icon } from '@iconify/vue'
+
+const mode = useColorMode()
 </script>
 
 <template>
@@ -24,9 +28,17 @@ import { Icon } from '@iconify/vue'
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuItem @click="mode = 'light'"> Light </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'dark'"> Dark </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'auto'"> System </DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'light'">Light</DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'dark'">Dark</DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'auto'">System</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
+
+<style scoped>
+#darkMode {
+  position: fixed;
+  top: 0.5rem;
+  right: 1rem;
+}
+</style>

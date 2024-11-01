@@ -1,221 +1,68 @@
-use ethportal_api::jsonrpsee::http_client::HttpClientBuilder;
-use ethportal_api::Web3ApiClient;
-use log::{info, warn};
-use serde::{Deserialize, Serialize};
+mod commands;
+mod types;
+mod utils;
+use crate::commands::{eth, trin};
+use crate::types::node::NodeStats;
 use std::sync::Mutex;
-use std::thread::sleep;
-use std::time::Duration;
-use sysinfo::{Pid, System};
 use tauri::async_runtime::JoinHandle;
-use tauri::Emitter;
 use tauri::Manager;
-use tauri::State;
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_shell::process::{CommandChild, CommandEvent};
-use tauri_plugin_shell::ShellExt;
-
-//
-// todo
-//
-// 1. bundle trin binaries for all platforms in app
-//
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct TrinStats {
-    cpu: f32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct TrinConfig {
-    // args received from the frontend must be camelCase
-    httpPort: usize,
-    storage: usize,
-}
+use tauri_plugin_shell::process::CommandChild;
 
 #[derive(Default)]
 struct AppData {
-    trin_handle: Mutex<Option<CommandChild>>,
+    trin_handle: Option<CommandChild>,
     // todo: double check that we need this
-    log_handle: Mutex<Option<JoinHandle<()>>>,
+    log_handle: Option<JoinHandle<()>>,
     // todo: double check that we need this
-    status_handle: Mutex<Option<JoinHandle<()>>>,
-}
-
-// this is the jsonrpc request used to make sure
-// that the trin node is running
-// ... hmm. ok this might not be the best way to check that
-// the trin node is running. eg. the node will respond even if
-// it is not connected to the network (aka error binding to udp socket)
-async fn check_trin_status(http_port: &usize) -> bool {
-    let endpoint = format!("http://localhost:{}", http_port);
-    let client = HttpClientBuilder::default().build(&endpoint).unwrap();
-    client.client_version().await.is_ok()
-}
-
-#[tauri::command]
-async fn launch_trin<'l>(
-    app: tauri::AppHandle,
-    app_data: State<'l, AppData>,
-    trin_config: TrinConfig,
-) -> Result<String, String> {
-    info!("starting trin with config: {:?}", trin_config);
-
-    let web3_http_address = format!("http://127.0.0.1:{}", trin_config.httpPort);
-    let (mut rx, child) = app
-        .shell()
-        .sidecar("trin")
-        .expect("failed to create `trin` binary command")
-        .args([
-            "--web3-transport=http",
-            "--portal-subnetworks=history",
-            format!("--web3-http-address={}", web3_http_address).as_str(),
-            format!("--mb={}", trin_config.storage).as_str(),
-        ])
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    // todo: improve logging ... aka where to write logs
-    // spawn a thread that will read the stdout of the trin process
-    let log_handle = tauri::async_runtime::spawn(async move {
-        // read events such as stdout
-        while let Some(event) = rx.recv().await {
-            if let CommandEvent::Stdout(line_bytes) = event {
-                let line = String::from_utf8_lossy(&line_bytes);
-                //window
-                //.emit("message", Some(format!("'{}'", line)))
-                //.expect("failed to emit event");
-                // write to stdin
-                info!("Child process stdout: {}", line);
-            }
-        }
-    });
-
-    // if trin is not responding to jsonrpc requests after 30 seconds,
-    // we assume it crashed
-    let mut i = 0;
-    while i <= 30 {
-        info!("checking trin");
-        // trin has successfully started
-        if check_trin_status(&trin_config.httpPort).await {
-            break;
-        }
-        sleep(Duration::from_secs(1));
-        i += 1;
-        if i == 20 {
-            let _ = child.kill();
-            return Err("unable to get a response from the rpc server".to_string());
-        }
-    }
-
-    // spawn a thread that will ping the trin node every 3 seconds
-    // to make sure it is still running
-    let app_clone = app.clone();
-    let pid = child.pid();
-    let status_handle = tauri::async_runtime::spawn(async move {
-        info!("checking trin status, pid: {:?}", pid);
-        // Initialize system information gatherer
-        let mut sys = System::new_all();
-        loop {
-            // Refresh process list and CPU usage
-            sys.refresh_all();
-
-            // Get process ID for the port
-            let pid = Pid::from(pid as usize);
-
-            // Get the main process and all its children
-            let mut total_cpu = 0.0;
-            let mut process_count = 0;
-
-            // Check main process
-            if let Some(process) = sys.process(pid) {
-                total_cpu += process.cpu_usage();
-                process_count += 1;
-
-                // Get all processes to check for children
-                for (_pid_check, process_check) in sys.processes() {
-                    if process_check.parent() == Some(pid) {
-                        total_cpu += process_check.cpu_usage();
-                        process_count += 1;
-                    }
-                }
-            }
-            println!(
-                "Port {}: {} process(es), Total CPU Usage: {:.1}%",
-                pid, process_count, total_cpu
-            );
-            app_clone
-                .emit(
-                    "trin-stats",
-                    TrinStats {
-                        cpu: total_cpu as f32,
-                    },
-                )
-                .expect("failed to emit event");
-
-            if !check_trin_status(&trin_config.httpPort).await {
-                app_clone
-                    .emit("trin-crashed", ())
-                    .expect("failed to emit event");
-                break;
-            }
-            sleep(Duration::from_secs(3));
-        }
-    });
-
-    // todo: test by killing this - then remove
-    info!("Child process started: {:?}", pid);
-    *app_data.status_handle.lock().unwrap() = Some(status_handle);
-    *app_data.log_handle.lock().unwrap() = Some(log_handle);
-    *app_data.trin_handle.lock().unwrap() = Some(child);
-    Ok("started".to_string())
-}
-
-#[tauri::command]
-async fn shutdown_trin<'l>(app_data: State<'l, AppData>) -> Result<String, String> {
-    info!("stopping trin");
-    let mut trin_handle = app_data.trin_handle.lock().unwrap();
-    if let Some(child) = trin_handle.take() {
-        child.kill().expect("failed to kill child process");
-    } else {
-        warn!("unable to kill trin child process");
-    }
-    let mut log_handle = app_data.log_handle.lock().unwrap();
-    if let Some(handle) = log_handle.take() {
-        handle.abort();
-    } else {
-        warn!("unable to kill log handle");
-    }
-    let mut status_handle = app_data.status_handle.lock().unwrap();
-    if let Some(handle) = status_handle.take() {
-        handle.abort();
-    } else {
-        warn!("unable to kill status handle");
-    }
-    Ok(format!("stopped trin"))
+    status_handle: Option<JoinHandle<()>>,
+    node_stats: NodeStats,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // plugin ensures that only one instance of the app is running at a time
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // To focus the window of the running instance when user tries
+            // to open a new instance
+            #[cfg(desktop)]
+            let _ = app
+                .get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
+        }))
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             // args that are passed to your app on startup
             None,
         ))
+        // By default the plugin logs to stdout and to a file
+        // in the recommended log directory...
+        // Linux: /home/user/.config/com.trin-desktop.app
+        // macOS: /Users/user/Library/Logs/com.trin-desktop.app
+        // Windows: C:\Users\user\AppData\Roaming\com.trin-desktop.app
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Info)
                 .build(),
         )
+        // initializes the store used in frontend to persist state
         .plugin(tauri_plugin_store::Builder::new().build())
+        // initializes the shell plugin which allows us to spawn child processes
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let app_data = AppData::default();
-            app.manage(app_data);
+            app.manage(Mutex::new(app_data));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![launch_trin, shutdown_trin,])
+        // adds the commands that can be called from the frontend
+        .invoke_handler(tauri::generate_handler![
+            trin::launch_trin,
+            trin::shutdown_trin,
+            eth::eth_getBlockByNumber,
+            eth::eth_getBlockByHash,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
