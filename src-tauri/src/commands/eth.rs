@@ -3,7 +3,7 @@ use alloy::primitives::B256;
 use alloy::rpc::types::{Block, BlockNumberOrTag};
 use ethportal_api::jsonrpsee::http_client::HttpClientBuilder;
 use ethportal_api::EthApiClient;
-use log::{info, warn};
+use log::info;
 use std::str::FromStr;
 
 #[tauri::command]
@@ -14,19 +14,14 @@ pub async fn eth_getBlockByHash(
 ) -> Result<Block, String> {
     info!("eth_getBlockByHash: {:?}", block_hash);
     let endpoint = format!("http://localhost:{}", trin_config.httpPort);
-    let client = HttpClientBuilder::default().build(&endpoint).unwrap();
-    let block_hash = B256::from_str(&block_hash).unwrap();
-    let block = client.get_block_by_hash(block_hash, false).await;
-    match block {
-        Ok(block) => {
-            info!("eth_getBlockByNumber: {:?}", block);
-            Ok(block)
-        }
-        Err(e) => {
-            warn!("eth_getBlockByHash: {:?}", e);
-            Err(e.to_string())
-        }
-    }
+    let client = HttpClientBuilder::default()
+        .build(&endpoint)
+        .map_err(|e| e.to_string())?;
+    let block_hash = B256::from_str(&block_hash).map_err(|e| e.to_string())?;
+    client
+        .get_block_by_hash(block_hash, false)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -37,17 +32,12 @@ pub async fn eth_getBlockByNumber(
 ) -> Result<Block, String> {
     info!("eth_getBlockByNumber: {:?}", block_number);
     let endpoint = format!("http://localhost:{}", trin_config.httpPort);
-    let client = HttpClientBuilder::default().build(&endpoint).unwrap();
+    let client = HttpClientBuilder::default()
+        .build(&endpoint)
+        .map_err(|e| e.to_string())?;
     let block_number = BlockNumberOrTag::Number(block_number.into());
-    let block = client.get_block_by_number(block_number, false).await;
-    match block {
-        Ok(block) => {
-            info!("eth_getBlockByNumber: {:?}", block);
-            Ok(block)
-        }
-        Err(e) => {
-            warn!("eth_getBlockByNumber: {:?}", e);
-            Err(e.to_string())
-        }
-    }
+    client
+        .get_block_by_number(block_number, false)
+        .await
+        .map_err(|e| e.to_string())
 }

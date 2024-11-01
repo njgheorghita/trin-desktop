@@ -1,15 +1,15 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { useProvideCarousel } from './useCarousel';
+import { cn } from '@/lib/utils'
+import { useProvideCarousel } from './useCarousel'
 
 const props = defineProps({
   opts: { type: null, required: false },
   plugins: { type: null, required: false },
   orientation: { type: String, required: false, default: 'horizontal' },
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 
-const emits = defineEmits(['init-api']);
+const emits = defineEmits(['init-api'])
 
 const {
   canScrollNext,
@@ -18,8 +18,8 @@ const {
   carouselRef,
   orientation,
   scrollNext,
-  scrollPrev,
-} = useProvideCarousel(props, emits);
+  scrollPrev
+} = useProvideCarousel(props, emits)
 
 defineExpose({
   canScrollNext,
@@ -28,23 +28,23 @@ defineExpose({
   carouselRef,
   orientation,
   scrollNext,
-  scrollPrev,
-});
+  scrollPrev
+})
 
 function onKeyDown(event) {
-  const prevKey = props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
-  const nextKey = props.orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
+  const prevKey = props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'
+  const nextKey = props.orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'
 
   if (event.key === prevKey) {
-    event.preventDefault();
-    scrollPrev();
+    event.preventDefault()
+    scrollPrev()
 
-    return;
+    return
   }
 
   if (event.key === nextKey) {
-    event.preventDefault();
-    scrollNext();
+    event.preventDefault()
+    scrollNext()
   }
 }
 </script>

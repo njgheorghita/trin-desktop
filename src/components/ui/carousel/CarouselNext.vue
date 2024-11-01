@@ -1,14 +1,14 @@
 <script setup>
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { ArrowRightIcon } from '@radix-icons/vue';
-import { useCarousel } from './useCarousel';
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { ArrowRightIcon } from '@radix-icons/vue'
+import { useCarousel } from './useCarousel'
 
 const props = defineProps({
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 
-const { orientation, canScrollNext, scrollNext } = useCarousel();
+const { orientation, canScrollNext, scrollNext } = useCarousel()
 </script>
 
 <template>
@@ -20,7 +20,7 @@ const { orientation, canScrollNext, scrollNext } = useCarousel();
         orientation === 'horizontal'
           ? '-right-12 top-1/2 -translate-y-1/2'
           : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90',
-        props.class,
+        props.class
       )
     "
     variant="outline"

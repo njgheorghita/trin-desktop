@@ -15,7 +15,7 @@ import ConfigureSheet from '@/components/custom/ConfigureSheet.vue'
 import GetBlockByNumber from '@/components/custom/GetBlockByNumber.vue'
 import GetBlockByHash from '@/components/custom/GetBlockByHash.vue'
 
-const trinStats = ref({ 
+const trinStats = ref({
   cpu: 0,
   radius: 0,
   contentCurrent: 0,
@@ -27,7 +27,7 @@ const trinStats = ref({
   acceptsIn: 0,
   acceptsOut: 0,
   validationsIn: 0,
-  validationsOut: 0,
+  validationsOut: 0
 })
 const { toast } = useToast()
 const trinStatus = ref('stopped')
@@ -116,7 +116,7 @@ listen('trin-crashed', () => {
 })
 
 listen('trin-stats', (stats) => {
-  console.log("Stats received:", stats)
+  console.log('Stats received:', stats)
   trinStats.value.cpu = stats.payload.cpu
   trinStats.value.radius = stats.payload.radius
   trinStats.value.contentCurrent = stats.payload.contentCurrent
@@ -155,7 +155,9 @@ onMounted(async () => {
 
 <template>
   <main class="min-h-screen w-full bg-background">
-    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div class="container flex h-14 items-center">
         <slot name="header">
           <h1 class="text-lg font-semibold">Welcome to Trin...</h1>
@@ -163,23 +165,19 @@ onMounted(async () => {
       </div>
     </header>
     <div class="container py-6" style="margin: 0 auto; width: fit-content">
-      <ProcessCard 
+      <ProcessCard
         :trin-status="trinStatus"
         :is-launching="isLaunching"
         @toggle-trin-process="toggleTrinProcess"
       />
-	  <GetBlockByNumber :config="config"/>
-	  <GetBlockByHash :config="config"/>
+      <GetBlockByNumber :config="config" />
+      <GetBlockByHash :config="config" />
       <CpuUsage v-if="trinStatus === 'running'" :trin-stats="trinStats" />
       <StorageAllocation :storage="config.storage" />
       <HttpPortMonitor :port="config.httpPort" />
     </div>
     <DarkModeToggle />
-    <ConfigureSheet
-      :config="config"
-      :trin-status="trinStatus"
-      @update-config="updateConfig"
-    />
+    <ConfigureSheet :config="config" :trin-status="trinStatus" @update-config="updateConfig" />
     <Toaster />
   </main>
 </template>

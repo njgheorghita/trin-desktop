@@ -45,22 +45,12 @@ pub async fn launch_trin<'l>(
                 let line = String::from_utf8_lossy(&line_bytes);
                 info!("Child process stdout: {}", line);
                 if line.contains("reports~ data:") {
-                    let report = NodeHistoryLog::parse_log_line(&line);
-                    match report {
-                        Ok(report) => {
+                    let node_history_log = NodeHistoryLog::parse_log_line(&line);
+                    match node_history_log {
+                        Ok(log) => {
                             let state = app_clone.state::<Mutex<AppData>>();
                             let mut state = state.lock().unwrap();
-                            state.node_stats.radius = report.radius as u32;
-                            state.node_stats.content_current = report.content_current;
-                            state.node_stats.content_total = report.content_total;
-                            state.node_stats.count = report.count;
-                            state.node_stats.disk_usage = report.disk_usage;
-                            state.node_stats.offers_in = report.offers_in;
-                            state.node_stats.offers_out = report.offers_out;
-                            state.node_stats.accepts_in = report.accepts_in;
-                            state.node_stats.accepts_out = report.accepts_out;
-                            state.node_stats.validations_in = report.validations_in;
-                            state.node_stats.validations_out = report.validations_out;
+                            state.node_stats.node_history_log = log;
                             info!("parsed trin stats!!!");
                         }
                         Err(e) => {

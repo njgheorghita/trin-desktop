@@ -1,12 +1,12 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { useCarousel } from './useCarousel';
+import { cn } from '@/lib/utils'
+import { useCarousel } from './useCarousel'
 
 const props = defineProps({
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 
-const { orientation } = useCarousel();
+const { orientation } = useCarousel()
 </script>
 
 <template>
@@ -17,7 +17,7 @@ const { orientation } = useCarousel();
       cn(
         'min-w-0 shrink-0 grow-0 basis-full',
         orientation === 'horizontal' ? 'pl-4' : 'pt-4',
-        props.class,
+        props.class
       )
     "
   >

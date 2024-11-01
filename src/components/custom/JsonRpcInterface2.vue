@@ -4,14 +4,24 @@ import { useForm } from 'vee-validate'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form'
 
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 
-const hashSchema = toTypedSchema(z.object({
-  blockHash: z.string(),
-}))
+const hashSchema = toTypedSchema(
+  z.object({
+    blockHash: z.string()
+  })
+)
 
 const hashForm = useForm({
   validationSchema: hashSchema,
@@ -23,89 +33,82 @@ const hashForm = useForm({
 const submitHash = hashForm.handleSubmit(
   (values) => {
     console.log('Hash form success:', values)
-	    console.log('Hash form current state:', hashForm.values)
+    console.log('Hash form current state:', hashForm.values)
     console.log('Form meta:', hashForm.meta)
-  }, 
+  },
   (errors) => {
     console.log('Hash form errors:', errors)
   }
 )
 //const submitHash = hashForm.handleSubmit((values) => {
- // console.log('Form submitted!', values)
+// console.log('Form submitted!', values)
 //})
 
-const numberSchema = toTypedSchema(z.object({
-  blockNumber: z.number().min(1),
-}))
+const numberSchema = toTypedSchema(
+  z.object({
+    blockNumber: z.number().min(1)
+  })
+)
 
 const numberForm = useForm({
   validationSchema: numberSchema,
   initialValues: {
-	blockNumber: 1
+    blockNumber: 1
   }
 })
 
 const submitNumber = numberForm.handleSubmit((values) => {
   console.log('Form submitted!', values)
 })
-
 </script>
 
 <template>
-    <Card>
-      <CardHeader>
-        <CardTitle>Block Hash</CardTitle>
-      </CardHeader>
-      <CardContent>
-	    <VeeForm v-bind="hashForm" @submit="submitHash">
-		  <pre>{{ hashForm.errors }}</pre>
-		  <pre>{{ hashForm.values }}</pre>
-			<FormField v-slot="{ componentField }" name="blockHash">
-			  <FormItem>
-				<FormLabel>Block Hash</FormLabel>
-				<FormControl>
-					  <Input type="text" placeholder="abcsd" v-bind="componentField" />
-				      <pre>{{ componentField }}</pre>
-				</FormControl>
-				<FormDescription>
-				  enter a block hash
-				</FormDescription>
-				<FormMessage />
-			  </FormItem>
-			</FormField>
-			<Button type="submit">
-			  Submit
-			</Button>
-		  </VeeForm>
-      </CardContent>
-    </Card>
-    <Card>
-      <CardHeader>
-        <CardTitle>Block Number</CardTitle>
-      </CardHeader>
-      <CardContent>
-	    <VeeForm @submit="submitNumber">
-		  <pre>{{ numberForm.errors }}</pre>
-		  <pre>{{ numberForm.values }}</pre>
-			<FormField v-slot="{ componentField }" name="blockNumber">
-			  <FormItem>
-				<FormLabel>Block Number</FormLabel>
-				<FormControl>
-				  <Input type="number" placeholder="1" v-bind="componentField" />
-				      <pre>{{ componentField }}</pre>
-				</FormControl>
-				<FormDescription>
-				  enter a block number
-				</FormDescription>
-				<FormMessage />
-			  </FormItem>
-			</FormField>
-			<Button type="submit">
-			  Submit
-			</Button>
-		  </VeeForm>
-      </CardContent>
-    </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Block Hash</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <VeeForm v-bind="hashForm" @submit="submitHash">
+        <pre>{{ hashForm.errors }}</pre>
+        <pre>{{ hashForm.values }}</pre>
+        <FormField v-slot="{ componentField }" name="blockHash">
+          <FormItem>
+            <FormLabel>Block Hash</FormLabel>
+            <FormControl>
+              <Input type="text" placeholder="abcsd" v-bind="componentField" />
+              <pre>{{ componentField }}</pre>
+            </FormControl>
+            <FormDescription> enter a block hash </FormDescription>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <Button type="submit"> Submit </Button>
+      </VeeForm>
+    </CardContent>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Block Number</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <VeeForm @submit="submitNumber">
+        <pre>{{ numberForm.errors }}</pre>
+        <pre>{{ numberForm.values }}</pre>
+        <FormField v-slot="{ componentField }" name="blockNumber">
+          <FormItem>
+            <FormLabel>Block Number</FormLabel>
+            <FormControl>
+              <Input type="number" placeholder="1" v-bind="componentField" />
+              <pre>{{ componentField }}</pre>
+            </FormControl>
+            <FormDescription> enter a block number </FormDescription>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <Button type="submit"> Submit </Button>
+      </VeeForm>
+    </CardContent>
+  </Card>
 </template>
 <!--script setup>
 import { ref } from 'vue'

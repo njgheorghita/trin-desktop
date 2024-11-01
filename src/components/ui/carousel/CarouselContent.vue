@@ -1,28 +1,22 @@
 <script setup>
-import { cn } from '@/lib/utils';
-import { useCarousel } from './useCarousel';
+import { cn } from '@/lib/utils'
+import { useCarousel } from './useCarousel'
 
 defineOptions({
-  inheritAttrs: false,
-});
+  inheritAttrs: false
+})
 
 const props = defineProps({
-  class: { type: null, required: false },
-});
+  class: { type: null, required: false }
+})
 
-const { carouselRef, orientation } = useCarousel();
+const { carouselRef, orientation } = useCarousel()
 </script>
 
 <template>
   <div ref="carouselRef" class="overflow-hidden">
     <div
-      :class="
-        cn(
-          'flex',
-          orientation === 'horizontal' ? '-ml-4' : '-mt-4 flex-col',
-          props.class,
-        )
-      "
+      :class="cn('flex', orientation === 'horizontal' ? '-ml-4' : '-mt-4 flex-col', props.class)"
       v-bind="$attrs"
     >
       <slot />
