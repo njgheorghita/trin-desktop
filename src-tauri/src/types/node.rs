@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct NodeStats {
     pub cpu: f32,
+    pub pid: usize,
     pub node_history_log: NodeHistoryLog,
 }
 

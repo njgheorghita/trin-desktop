@@ -35,7 +35,6 @@ pub async fn launch_trin<'l>(
         .spawn()
         .map_err(|e| e.to_string())?;
 
-    // todo: improve logging ... aka where to write logs
     // spawn a thread that will read the stdout of the trin process
     let app_clone = app.clone();
     let log_handle = tauri::async_runtime::spawn(async move {
@@ -51,7 +50,6 @@ pub async fn launch_trin<'l>(
                             let state = app_clone.state::<Mutex<AppData>>();
                             let mut state = state.lock().unwrap();
                             state.node_stats.node_history_log = log;
-                            info!("parsed trin stats!!!");
                         }
                         Err(e) => {
                             warn!("Failed to parse log line: {}", e);
@@ -129,6 +127,7 @@ pub async fn launch_trin<'l>(
                 let state = app_clone.state::<Mutex<AppData>>();
                 let mut state = state.lock().unwrap();
                 state.node_stats.cpu = total_cpu as f32;
+                state.node_stats.pid = pid.into();
                 app_clone
                     .emit("trin-stats", state.node_stats.clone())
                     .expect("failed to emit event");

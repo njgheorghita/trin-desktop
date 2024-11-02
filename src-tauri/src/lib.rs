@@ -62,6 +62,7 @@ pub fn run() {
             trin::shutdown_trin,
             eth::eth_getBlockByNumber,
             eth::eth_getBlockByHash,
+            eth::eth_getBalance,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
