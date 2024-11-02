@@ -1,6 +1,7 @@
 <script setup>
 import { cn } from '@/lib/utils'
-import { DialogDescription } from 'radix-vue'
+import { ChevronUpIcon } from '@radix-icons/vue'
+import { SelectScrollUpButton, useForwardProps } from 'radix-vue'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -14,13 +15,17 @@ const delegatedProps = computed(() => {
 
   return delegated
 })
+
+const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <DialogDescription
-    :class="cn('text-sm text-muted-foreground', props.class)"
-    v-bind="delegatedProps"
+  <SelectScrollUpButton
+    v-bind="forwardedProps"
+    :class="cn('flex cursor-default items-center justify-center py-1', props.class)"
   >
-    <slot />
-  </DialogDescription>
+    <slot>
+      <ChevronUpIcon />
+    </slot>
+  </SelectScrollUpButton>
 </template>

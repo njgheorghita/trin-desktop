@@ -1,4 +1,5 @@
 <script setup>
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,11 +7,14 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Icon } from '@iconify/vue'
+import { useColorMode } from '@vueuse/core'
+
+const mode = useColorMode()
 </script>
 
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger as-child class="absolute z-50">
+    <DropdownMenuTrigger as-child class="z-50">
       <Button variant="outline" id="darkMode">
         <Icon
           icon="radix-icons:moon"
@@ -24,9 +28,9 @@ import { Icon } from '@iconify/vue'
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuItem @click="mode = 'light'"> Light </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'dark'"> Dark </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'auto'"> System </DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'light'">Light</DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'dark'">Dark</DropdownMenuItem>
+      <DropdownMenuItem @click="mode = 'auto'">System</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
