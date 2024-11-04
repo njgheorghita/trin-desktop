@@ -1,5 +1,5 @@
 use crate::types::config::TrinConfig;
-use crate::types::node::NodeHistoryLog;
+use crate::types::node::SubnetworkDataLog;
 use crate::utils::node_rpc::check_trin_status;
 use crate::AppData;
 use log::{info, warn};
@@ -28,7 +28,7 @@ pub async fn launch_trin<'l>(
         .expect("failed to create `trin` binary command")
         .args([
             "--web3-transport=http",
-            "--portal-subnetworks=history",
+            "--portal-subnetworks=history,state",
             format!("--web3-http-address={}", web3_http_address).as_str(),
             format!("--mb={}", trin_config.storage).as_str(),
         ])
@@ -43,18 +43,31 @@ pub async fn launch_trin<'l>(
             if let CommandEvent::Stdout(line_bytes) = event {
                 let line = String::from_utf8_lossy(&line_bytes);
                 info!("Child process stdout: {}", line);
-                if line.contains("reports~ data:") {
-                    let node_history_log = NodeHistoryLog::parse_log_line(&line);
-                    match node_history_log {
+                if line.contains("trin_history: reports~ data:") {
+                    let log = SubnetworkDataLog::parse_log_line(&line);
+                    match log {
                         Ok(log) => {
                             let state = app_clone.state::<Mutex<AppData>>();
                             let mut state = state.lock().unwrap();
-                            state.node_stats.node_history_log = log;
+                            state.node_stats.history_data = log;
                         }
                         Err(e) => {
                             warn!("Failed to parse log line: {}", e);
                         }
                     }
+                } else if line.contains("trin_state: reports~ data:") {
+                    let log = SubnetworkDataLog::parse_log_line(&line);
+                    match log {
+                        Ok(log) => {
+                            let state = app_clone.state::<Mutex<AppData>>();
+                            let mut state = state.lock().unwrap();
+                            state.node_stats.state_data = log;
+                        }
+                        Err(e) => {
+                            warn!("Failed to parse log line: {}", e);
+                        }
+                    }
+                    info!("trin_history: reports~");
                 }
             }
         }

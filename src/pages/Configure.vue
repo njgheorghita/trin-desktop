@@ -4,7 +4,9 @@
     <HttpPortMonitor />
     <Autostart />
     <br />
-    <p>* Configuration can only be edited when Trin is stopped.</p>
+    <div class="text-sm flex justify-end px-4 text-muted-foreground">
+      <p>* Configuration can only be edited when Trin is stopped.</p>
+    </div>
   </PageLayout>
 </template>
 

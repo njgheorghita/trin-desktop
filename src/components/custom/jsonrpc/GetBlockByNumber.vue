@@ -10,7 +10,13 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import {
+  NumberField,
+  NumberFieldContent,
+  NumberFieldDecrement,
+  NumberFieldIncrement,
+  NumberFieldInput
+} from '@/components/ui/number-field'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/toast'
 import { useTrinConfig } from '@/composables/useTrinConfig'
@@ -27,7 +33,7 @@ const isLoading = ref(false)
 
 const formSchema = toTypedSchema(
   z.object({
-    blockNumber: z.number().min(1)
+    blockNumber: z.number().min(0)
   })
 )
 const form = useForm({
@@ -35,12 +41,12 @@ const form = useForm({
 })
 const blockData = ref(null)
 
-const onSubmit = form.handleSubmit(async (values) => {
+const fetchBlockData = async (blockNumber) => {
   isLoading.value = true
   try {
     blockData.value = await invoke('eth_getBlockByNumber', {
       trinConfig: config.value,
-      blockNumber: values.blockNumber
+      blockNumber
     })
   } catch (error) {
     toast({
@@ -51,7 +57,15 @@ const onSubmit = form.handleSubmit(async (values) => {
   } finally {
     isLoading.value = false
   }
+}
+
+const onSubmit = form.handleSubmit(async (values) => {
+  await fetchBlockData(values.blockNumber)
 })
+
+const onNumberChange = async (value) => {
+  await fetchBlockData(value)
+}
 
 const getPrettyBlockInfo = () => {
   if (!blockData.value) return null
@@ -78,7 +92,13 @@ const getPrettyBlockInfo = () => {
           <FormItem>
             <FormLabel>Block Number</FormLabel>
             <FormControl>
-              <Input type="number" v-bind="componentField" />
+              <NumberField v-bind="componentField" @update:modelValue="onNumberChange" :min="0">
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
             </FormControl>
             <FormDescription> Enter a block number to look up. </FormDescription>
             <FormMessage />

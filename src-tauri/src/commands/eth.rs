@@ -50,7 +50,7 @@ pub async fn eth_getBalance(
     address: String,
     block_number: u64,
 ) -> Result<U256, String> {
-    info!("eth_getBalance: {:?}", address);
+    info!("eth_getBalance: {:?} @ {:?}", address, block_number);
     let endpoint = format!("http://localhost:{}", trin_config.httpPort);
     let client = HttpClientBuilder::default()
         .build(&endpoint)
