@@ -2160,7 +2160,9 @@ dependencies = [
 
 [[package]]
 name = "ethportal-api"
-version = "0.2.2"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "048854d85f4569d22c33c246e16b63e5134ea207709f19c1fa996b23804be439"
 dependencies = [
  "alloy",
  "alloy-rlp",
