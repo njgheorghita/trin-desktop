@@ -7,13 +7,14 @@ use serde::{Deserialize, Serialize};
 pub struct NodeStats {
     pub cpu: f32,
     pub pid: usize,
-    pub node_history_log: NodeHistoryLog,
+    pub state_data: SubnetworkDataLog,
+    pub history_data: SubnetworkDataLog,
 }
 
-// the scraped stats from trin's "trin_history: reports~ data:" log line
+// the scraped stats from trin's "trin_*: reports~ data:" log line
 // in the future, we should probably just add a jsonrpc endpoint that returns this data
 #[derive(Debug, Default, Clone, Copy, Deserialize, Serialize)]
-pub struct NodeHistoryLog {
+pub struct SubnetworkDataLog {
     pub radius: f32,
     pub content_current: f32,
     pub content_total: f32,
@@ -27,7 +28,7 @@ pub struct NodeHistoryLog {
     pub validations_out: u32,
 }
 
-impl NodeHistoryLog {
+impl SubnetworkDataLog {
     pub fn parse_log_line(line: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let re = Regex::new(
             r"radius=(\d+\.?\d*)%.*?content=(\d+\.?\d*)/(\d+\.?\d*)mb.*?#=(\d+).*?disk=(\d+\.?\d*)mb.*?offers=(\d+)/(\d+).*?accepts=(\d+)/(\d+).*?validations=(\d+)/(\d+)",
