@@ -11,12 +11,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'
+import { formatEthBalance } from '@/components/utils/formatWei'
 import { useTrinConfig } from '@/composables/useTrinConfig'
 import { invoke } from '@tauri-apps/api/core'
 import { toTypedSchema } from '@vee-validate/zod'
 import { Loader2 } from 'lucide-vue-next'
 import { useForm } from 'vee-validate'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import * as z from 'zod'
 
 const { config } = useTrinConfig()
@@ -36,6 +37,8 @@ const formSchema = toTypedSchema(
 const form = useForm({
   validationSchema: formSchema
 })
+// this value is actually being ignored, and we're
+// using a hardcoded block hash inside the eth_getBalance call
 const blockHeight = ref(1000000)
 const accountValue = ref(null)
 
@@ -45,6 +48,8 @@ const onSubmit = form.handleSubmit(async (values) => {
     accountValue.value = await invoke('eth_getBalance', {
       trinConfig: config.value,
       address: values.address,
+      // this value is actually being ignored, and we're
+      // using a hardcoded block hash inside the eth_getBalance call
       blockNumber: blockHeight.value
     })
   } catch (error) {
@@ -56,6 +61,11 @@ const onSubmit = form.handleSubmit(async (values) => {
   } finally {
     isLoading.value = false
   }
+})
+
+const formattedBalance = computed(() => {
+  if (!accountValue.value) return null
+  return formatEthBalance(accountValue.value)
 })
 </script>
 
@@ -80,11 +90,17 @@ const onSubmit = form.handleSubmit(async (values) => {
             <FormMessage />
           </FormItem>
         </FormField>
+        <br />
         <Button type="submit" :disabled="isLoading">
           <Loader2 v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
           {{ isLoading ? '' : 'Submit' }}
         </Button>
-        <p v-if="accountValue">Account balance: {{ accountValue }} GWEI</p>
+        <div v-if="accountValue" class="mt-4 space-y-2">
+          <p class="text-sm text-gray-500">Account Balance:</p>
+          <p class="text-lg font-medium">{{ formattedBalance }}</p>
+          <p class="text-xs text-gray-400">{{ parseInt(accountValue, 16) }} GWEI</p>
+          <p class="text-xs text-gray-400">Raw: {{ accountValue }}</p>
+        </div>
       </form>
     </CardContent>
   </Card>

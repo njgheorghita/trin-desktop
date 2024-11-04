@@ -5,7 +5,7 @@ import { ref } from 'vue'
 
 // these values don't matter, they will be overwritten by initializeConfig
 const config = ref({
-  storage: 100,
+  storage: 2000,
   httpPort: 8545,
   autostart: true
 })
@@ -51,10 +51,10 @@ export function useTrinConfig() {
 
     if (!httpPort) {
       store.set('httpPort', 8545)
-      store.set('storage', 100)
+      store.set('storage', 2000)
       store.set('autostart', true)
       config.value.httpPort = 8545
-      config.value.storage = 100
+      config.value.storage = 2000
       config.value.autostart = true
     } else {
       config.value.httpPort = httpPort

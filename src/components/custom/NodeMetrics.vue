@@ -8,6 +8,7 @@ import ValidationsCard from '@/components/custom/metrics/ValidationsCard.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatMemorySize } from '@/components/utils/formatMemory'
 import { useTrinStats } from '@/composables/useTrinStats'
 
 import { Info } from 'lucide-vue-next'
@@ -80,7 +81,7 @@ const { trinStats } = useTrinStats()
             </TooltipProvider>
           </CardHeader>
           <CardContent>
-            <div class="text-2xl font-bold">{{ trinStats.diskUsage }} MB</div>
+            <div class="text-2xl font-bold">{{ formatMemorySize(trinStats.diskUsage) }}</div>
           </CardContent>
         </Card>
 

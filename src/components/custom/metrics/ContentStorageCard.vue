@@ -1,6 +1,7 @@
 <script setup>
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatMemoryRatio } from '@/components/utils/formatMemory'
 import { Info } from 'lucide-vue-next'
 
 defineProps({
@@ -31,7 +32,7 @@ defineProps({
       </TooltipProvider>
     </CardHeader>
     <CardContent>
-      <div class="text-2xl font-bold">{{ contentCurrent.toFixed(2) }} / {{ contentTotal }} MB</div>
+      <div class="text-2xl font-bold">{{ formatMemoryRatio(contentCurrent, contentTotal) }}</div>
     </CardContent>
   </Card>
 </template>

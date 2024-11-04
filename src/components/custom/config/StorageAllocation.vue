@@ -18,6 +18,7 @@ import {
   NumberFieldInput
 } from '@/components/ui/number-field'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatMemorySize } from '@/components/utils/formatMemory'
 import { useTrinConfig } from '@/composables/useTrinConfig'
 import { useTrinProcess } from '@/composables/useTrinProcess'
 import { Edit2 } from 'lucide-vue-next'
@@ -72,13 +73,17 @@ watch(isDialogOpen, (value) => {
 
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Edit Storage Allocation</DialogTitle>
+                <DialogTitle>Edit Storage Allocation (MB)</DialogTitle>
               </DialogHeader>
               <Form class="py-4">
                 <FormField name="storage">
                   <FormItem>
                     <FormControl>
-                      <NumberField v-model="tempStorage" :min="100">
+                      <NumberField
+                        v-model="tempStorage"
+                        :min="100"
+                        :format-options="{ useGrouping: false }"
+                      >
                         <NumberFieldContent>
                           <NumberFieldDecrement />
                           <NumberFieldInput />
@@ -99,7 +104,7 @@ watch(isDialogOpen, (value) => {
       </div>
     </CardHeader>
     <CardContent>
-      <div class="text-2xl font-bold">{{ config.storage }} MB</div>
+      <div class="text-2xl font-bold">{{ formatMemorySize(config.storage) }}</div>
       <p class="text-xs text-muted-foreground">
         Total amount of storage that will be consumed by your Trin client.
       </p>

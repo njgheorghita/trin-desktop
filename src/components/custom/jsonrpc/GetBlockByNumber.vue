@@ -71,7 +71,7 @@ const getPrettyBlockInfo = () => {
   if (!blockData.value) return null
 
   return {
-    number: blockData.value.number,
+    number: parseInt(blockData.value.number, 16) + ' (' + blockData.value.number + ')',
     hash: blockData.value.hash,
     timestamp: new Date(blockData.value.timestamp * 1000).toLocaleString(),
     transactions: blockData.value.transactions?.length || 0,
@@ -92,7 +92,12 @@ const getPrettyBlockInfo = () => {
           <FormItem>
             <FormLabel>Block Number</FormLabel>
             <FormControl>
-              <NumberField v-bind="componentField" @update:modelValue="onNumberChange" :min="0">
+              <NumberField
+                v-bind="componentField"
+                @update:modelValue="onNumberChange"
+                :min="0"
+                :format-options="{ useGrouping: false }"
+              >
                 <NumberFieldContent>
                   <NumberFieldDecrement />
                   <NumberFieldInput />
