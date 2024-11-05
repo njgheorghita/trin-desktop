@@ -7,16 +7,21 @@ import { onMounted } from 'vue'
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { useToast } from '@/components/ui/toast'
-const { toast } = useToast()
 
-const update = await check();
-if (update) {
-  toast({
-	title: 'Update available',
-	description: `An update to version ${update.version} is available. Click here to install it.`,
-	variant: 'info',
-	//onClick: () => installUpdate(update)
-  });
+const { toast } = useToast()
+const { initializeConfig } = useTrinConfig()
+const { launchTrin } = useTrinProcess()
+
+onMounted(async () => {
+
+  const update = await check();
+  if (update) {
+    toast({
+  	  title: 'Update available',
+  	  description: `An update to version ${update.version} is available. Click here to install it.`,
+	  variant: 'info',
+	  //onClick: () => installUpdate(update)
+    });
 //  let downloaded = 0;
  // let contentLength = 0;
   // alternatively we could also call update.download() and update.install() separately
@@ -38,12 +43,9 @@ if (update) {
 
   //console.log('update installed');
   //await relaunch();
-}
+  }
 
-const { initializeConfig } = useTrinConfig()
-const { launchTrin } = useTrinProcess()
 
-onMounted(async () => {
   const initialConfig = await initializeConfig()
   if (initialConfig.autostart) {
     await launchTrin(initialConfig)

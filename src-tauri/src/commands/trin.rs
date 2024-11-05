@@ -22,6 +22,7 @@ pub async fn launch_trin<'l>(
     info!("starting trin with config: {:?}", trin_config);
 
     let web3_http_address = format!("http://127.0.0.1:{}", trin_config.httpPort);
+
     let (mut rx, child) = app
         .shell()
         .sidecar("trin")
