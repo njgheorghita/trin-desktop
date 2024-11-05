@@ -1,6 +1,9 @@
 name: Build
 
 on: [pull_request]
+  #  push:
+  #  tags:
+  #    - 'app-v*'
 
 jobs:
   publish-tauri:
@@ -28,8 +31,35 @@ jobs:
             binary_suffix: 'x86_64-pc-windows-gnu.tar.gz'
 
     runs-on: ${{ matrix.platform }}
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+
+      # setup macos signing certificate
+      - name: Import Apple Developer Certificate
+        if: matrix.platform == 'macos-latest'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          security find-identity -v -p codesigning build.keychain
+
+      - name: Verify Certificate
+        if: matrix.platform == 'macos-latest'
+        run: |
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
+          CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
+          echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
+          echo "Certificate imported."
 
       # Download the appropriate external binary
       - name: Download external binary
@@ -70,13 +100,53 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: npm install
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri App
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: true
           args: ${{ matrix.args }}
+
+      #- name: Notarize App
+        #if: matrix.platform == 'macos-latest'
+        #run: |
+          #echo "Creating ZIP for notarization..."
+          #ditto -c -k --keepParent "./src-tauri/target/${{ matrix.target }}/release/bundle/macos/trin-desktop.app" "./trin-desktop.zip"
+          
+          #echo "Submitting for notarization..."
+          #xcrun notarytool submit "./trin-desktop.zip" \
+            #--apple-id "$APPLE_ID" \
+            #--password "$APPLE_ID_PASSWORD" \
+            #--team-id "6F46L33ESN" \
+            #--wait
+          
+          #echo "Stapling app..."
+          #xcrun stapler staple "./src-tauri/target/${{ matrix.target }}/release/bundle/macos/trin-desktop.app"
+          
+          #echo "Notarization complete"
+        #env:
+          #APPLE_ID: ${{ secrets.APPLE_ID }}
+          #APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+
+#      - uses: tauri-apps/tauri-action@v0
+        #env:
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          #APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          #APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          #APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
+          #TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          #APPLE_ID: ${{ secrets.APPLE_ID }}
+          #APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          #APPLE_TEAM_ID: "6F46L33ESN"
+        #with:
+          #tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          #releaseName: 'App v__VERSION__'
+          #releaseBody: 'See the assets to download this version and install.'
+          #releaseDraft: true
+          #prerelease: true
+#          args: ${{ matrix.args }} --verbose

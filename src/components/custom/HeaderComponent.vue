@@ -51,6 +51,7 @@
       <!-- Right section -->
       <div class="flex-1 flex justify-end gap-2">
         <DarkModeToggle />
+        <Github />
       </div>
     </div>
   </header>
@@ -58,6 +59,7 @@
 
 <script setup>
 import DarkModeToggle from '@/components/custom/config/DarkModeToggle.vue'
+import Github from '@/components/custom/config/Github.vue'
 import {
   NavigationMenu,
   NavigationMenuItem,
