@@ -18,6 +18,7 @@ jobs:
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
             binary_suffix: 'aarch64-apple-darwin.tar.gz'
+            #
           #- platform: 'macos-latest' # for Intel based macs.
             #args: '--target x86_64-apple-darwin'
             #target: 'x86_64-apple-darwin'
@@ -80,25 +81,6 @@ jobs:
         run: chmod +x "src-tauri/trin-${{ matrix.target }}"
         shell: bash
 
-      #- name: Setup inspection script
-        #if: matrix.platform == 'macos-latest'
-        #run: |
-          #cat > inspect-binary.sh << 'EOL'
-          ##!/bin/bash
-          #echo "Current directory:"
-          #pwd
-
-          #echo "\nBinary location and structure:"
-          #ls -la src-tauri/binaries/
-
-          #echo "\nDirectory tree:"
-          #find src-tauri/binaries -type f -name "*trin*"
-
-          #echo "\nFull directory listing:"
-          #ls -R
-          #EOL
-          #chmod +x inspect-binary.sh
-
       # Create entitlements file
       - name: Create entitlements file
         if: matrix.platform == 'macos-latest'
@@ -140,16 +122,6 @@ jobs:
           echo "Full path to entitlements:"
           realpath src-tauri/entitlements.plist
 
-      # Sign the binary
-#      - name: Sign external binary
-        #if: matrix.platform == 'macos-latest'
-        #run: |
-          #codesign --force --options runtime \
-            #--sign "Developer ID Application: Nick Gheorghita (6F46L33ESN)" \
-            #--options runtime \
-            #--keychain /Users/runner/Library/Keychains/build.keychain \
-            #"src-tauri/binaries/trin-v0.1.0-${{ matrix.target }}"
-
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
@@ -180,68 +152,6 @@ jobs:
         run: |
           echo "${{ secrets.APPLE_API_KEY_FILE }}" > api-key.p8
           chmod 600 api-key.p8
-
-      #- name: Validate signing requirements
-        #if: matrix.platform == 'macos-latest'
-        #run: |
-          #echo "Validating environment variables..."
-          
-          ## Check APPLE_CERTIFICATE decodes to valid binary
-          #if echo "$APPLE_CERTIFICATE" | base64 -d > test_cert.p12 2>/dev/null; then
-            #echo "✓ APPLE_CERTIFICATE is valid base64"
-            #rm test_cert.p12
-          #else
-            #echo "✗ APPLE_CERTIFICATE is not valid base64"
-            #exit 1
-          #fi
-          
-          ## Check APPLE_ID format
-          #if [[ "$APPLE_ID" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
-            #echo "✓ APPLE_ID has valid email format"
-          #else
-            #echo "✗ APPLE_ID does not appear to be a valid email"
-            #exit 1
-          #fi
-          
-          ## Check password variables aren't empty or default values
-          #if [ ${#APPLE_CERTIFICATE_PASSWORD} -lt 1 ]; then
-            #echo "✗ APPLE_CERTIFICATE_PASSWORD appears to be empty"
-            #exit 1
-          #fi
-          
-          #if [ ${#APPLE_ID_PASSWORD} -lt 1 ]; then
-            #echo "✗ APPLE_ID_PASSWORD appears to be empty"
-            #exit 1
-          #fi
-          
-          #if [ ${#KEYCHAIN_PASSWORD} -lt 1 ]; then
-            #echo "✗ KEYCHAIN_PASSWORD appears to be empty"
-            #exit 1
-          #fi
-          
-          #echo "Testing certificate import..."
-          ## Try to actually import the certificate to validate credentials
-          #echo "$APPLE_CERTIFICATE" | base64 -d > test_cert.p12
-          #if security create-keychain -p "$KEYCHAIN_PASSWORD" test.keychain && \
-             #security unlock-keychain -p "$KEYCHAIN_PASSWORD" test.keychain && \
-             #security import test_cert.p12 -k test.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign; then
-            #echo "✓ Certificate imports successfully"
-            ## Clean up
-            #security delete-keychain test.keychain
-            #rm test_cert.p12
-          #else
-            #echo "✗ Failed to import certificate - check APPLE_CERTIFICATE and APPLE_CERTIFICATE_PASSWORD"
-            #rm test_cert.p12
-            #exit 1
-          #fi
-          
-          #echo "All validation checks passed!"
-        #env:
-          #APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          #APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          #APPLE_ID: ${{ secrets.APPLE_ID }}
-          #APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          #KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0.5.0
