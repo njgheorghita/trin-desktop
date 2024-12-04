@@ -1,10 +1,9 @@
 name: Build
 
-on: [pull_request]
-
-  #push:
-    #tags:
-      #- 'app-v*'
+on:
+  push:
+    tags:
+      - 'app-v*'
 
 jobs:
   publish-tauri:
@@ -18,19 +17,19 @@ jobs:
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
             binary_suffix: 'aarch64-apple-darwin.tar.gz'
-            #
+          # this platform needs testing...
           #- platform: 'macos-latest' # for Intel based macs.
             #args: '--target x86_64-apple-darwin'
             #target: 'x86_64-apple-darwin'
             #binary_suffix: 'x86_64-apple-darwin.tar.gz'
-          #- platform: 'ubuntu-22.04'
-            #args: ''
-            #target: 'x86_64-unknown-linux-gnu'
-            #binary_suffix: 'x86_64-unknown-linux-gnu.tar.gz'
-          #- platform: 'windows-latest'
-            #args: ''
-            #target: 'x86_64-pc-windows-msvc.exe'
-            #binary_suffix: 'x86_64-pc-windows-gnu.tar.gz'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            target: 'x86_64-unknown-linux-gnu'
+            binary_suffix: 'x86_64-unknown-linux-gnu.tar.gz'
+          - platform: 'windows-latest'
+            args: ''
+            target: 'x86_64-pc-windows-msvc.exe'
+            binary_suffix: 'x86_64-pc-windows-gnu.tar.gz'
 
     runs-on: ${{ matrix.platform }}
     env:
@@ -161,23 +160,14 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
-          # first 3 
-          # these worked 1/3
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: "6F46L33ESN"
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
-          #APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
-
           # these are needed for creating the updater assets
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
-          # second 3 failed...
-          #APPLE_API_KEY_PATH: ${{ github.workspace }}/api-key.p8
-          #APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          #APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'App v__VERSION__'
