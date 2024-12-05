@@ -32,13 +32,18 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["./binaries/trin-v0.1.0-alpha.53"]
+    "externalBin": ["./binaries/trin-v0.1.0-alpha.53"],
+	"macOS": {
+	  "hardenedRuntime": true,
+	  "providerShortName": "6F46L33ESN",
+	  "signingIdentity": "Developer ID Application: Nick Gheorghita (6F46L33ESN)"
+	}
   },
   "plugins": {
 	"updater": {
 	  "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4RTEyNTAyM0I1MDAxNwpSV1FYQUxValVCS09Bd2UwT0tBUjZuRis2b05aRm1XcUx2S1FwSTJnVk91ME5IVmVnTjhIcTJ1Swo=",
 	  "endpoints": [
-		"https://github.com/njgheorghita/trin-desktop/releases/download/v0.1.0-alpha.53"
+		"https://github.com/njgheorghita/trin-desktop/releases/latest/download/latest.json"
 	  ],
 	  "windows": {
 		"installmode": "passive"

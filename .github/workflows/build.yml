@@ -17,10 +17,11 @@ jobs:
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
             binary_suffix: 'aarch64-apple-darwin.tar.gz'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
-            target: 'x86_64-apple-darwin'
-            binary_suffix: 'x86_64-apple-darwin.tar.gz'
+          # this platform needs testing...
+          #- platform: 'macos-latest' # for Intel based macs.
+            #args: '--target x86_64-apple-darwin'
+            #target: 'x86_64-apple-darwin'
+            #binary_suffix: 'x86_64-apple-darwin.tar.gz'
           - platform: 'ubuntu-22.04'
             args: ''
             target: 'x86_64-unknown-linux-gnu'
@@ -65,15 +66,60 @@ jobs:
       - name: Download external binary
         run: |
           mkdir -p src-tauri/binaries
-          curl -L -o "src-tauri/binaries/trin-v0.1.0-alpha.53-${{ matrix.target }}" \
-            "https://github.com/ethereum/trin/releases/download/v0.1.0-alpha.53/trin-v0.1.0-alpha.53-${{ matrix.binary_suffix }}"
+          mkdir -p src-tauri/binaries/trin
+          curl -L -o "src-tauri/trin-${{ matrix.binary_suffix }}" \
+            "https://github.com/ethereum/trin/releases/download/v0.1.0/trin-v0.1.0-${{ matrix.binary_suffix }}"
+          tar -xzf "src-tauri/trin-${{ matrix.binary_suffix }}" -C src-tauri
+          mv src-tauri/trin "src-tauri/trin-${{ matrix.target }}"
+          ls -la src-tauri/
         shell: bash
 
       # Make binary executable (not needed for Windows)
       - name: Make binary executable
         if: matrix.platform != 'windows-latest'
-        run: chmod +x "src-tauri/binaries/trin-v0.1.0-alpha.53-${{ matrix.target }}"
+        run: chmod +x "src-tauri/trin-${{ matrix.target }}"
         shell: bash
+
+      # Create entitlements file
+      - name: Create entitlements file
+        if: matrix.platform == 'macos-latest'
+        run: |
+          cat > src-tauri/entitlements.plist << 'EOL'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>com.apple.security.cs.allow-jit</key>
+              <true/>
+              <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+              <true/>
+              <key>com.apple.security.cs.disable-library-validation</key>
+              <true/>
+              <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+              <true/>
+              <key>com.apple.security.get-task-allow</key>
+              <true/>
+              <key>com.apple.security.automation.apple-events</key>
+              <true/>
+          </dict>
+          </plist>
+          EOL
+          
+          echo "Verifying plist format..."
+          plutil -lint src-tauri/entitlements.plist
+          
+          echo "Converting to XML format..."
+          plutil -convert xml1 src-tauri/entitlements.plist
+          
+          echo "File permissions and contents:"
+          ls -la src-tauri/entitlements.plist
+          cat src-tauri/entitlements.plist
+          
+          echo "Current working directory:"
+          pwd
+          
+          echo "Full path to entitlements:"
+          realpath src-tauri/entitlements.plist
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
@@ -100,36 +146,31 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: npm install
 
+      - name: Setup Apple API Key
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "${{ secrets.APPLE_API_KEY_FILE }}" > api-key.p8
+          chmod 600 api-key.p8
+
       - name: Build Tauri App
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v0.5.0
+        timeout-minutes: 20
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
+
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: "6F46L33ESN"
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+          # these are needed for creating the updater assets
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseBody: 'See the assets to download this version and install'
           releaseDraft: true
-          args: ${{ matrix.args }}
-
-#      - uses: tauri-apps/tauri-action@v0
-        #env:
-          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          #APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          #APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          #APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
-          #TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          #APPLE_ID: ${{ secrets.APPLE_ID }}
-          #APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          #APPLE_TEAM_ID: "6F46L33ESN"
-        #with:
-          #tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          #releaseName: 'App v__VERSION__'
-          #releaseBody: 'See the assets to download this version and install.'
-          #releaseDraft: true
-          #prerelease: true
-#          args: ${{ matrix.args }} --verbose
+          args: ${{ matrix.args }} --verbose
