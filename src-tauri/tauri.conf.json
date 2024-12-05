@@ -32,7 +32,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["./binaries/trin-v0.1.0-alpha.53"],
+    "externalBin": ["./binaries/trin"],
 	"macOS": {
 	  "hardenedRuntime": true,
 	  "providerShortName": "6F46L33ESN",
