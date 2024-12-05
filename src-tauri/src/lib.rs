@@ -5,6 +5,8 @@ use crate::commands::{eth, trin};
 use crate::types::node::NodeStats;
 use std::sync::Mutex;
 use tauri::async_runtime::JoinHandle;
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_shell::process::CommandChild;
@@ -54,6 +56,27 @@ pub fn run() {
         // initializes the shell plugin which allows us to spawn child processes
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_i])?;
+            let tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .menu_on_left_click(false)
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    _ => {}
+                })
+                .build(app)?;
             let app_data = AppData::default();
             app.manage(Mutex::new(app_data));
             Ok(())
@@ -66,6 +89,14 @@ pub fn run() {
             eth::eth_getBlockByHash,
             eth::eth_getBalance,
         ])
+        // Prevent the app from exiting when the window is closed
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

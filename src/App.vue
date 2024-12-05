@@ -27,19 +27,26 @@ onMounted(async () => {
     switch (event.event) {
       case 'Started':
         contentLength = event.data.contentLength;
-        console.log(`started downloading ${event.data.contentLength} bytes`);
+		toast({
+		  description: `started downloading ${event.data.contentLength} bytes`,
+		  variant: 'info',
+		});
         break;
       case 'Progress':
         downloaded += event.data.chunkLength;
-        console.log(`downloaded ${downloaded} from ${contentLength}`);
+		toast({
+		  description: `downloaded ${downloaded} from ${contentLength}`,
+		  variant: 'info',
+		});
         break;
       case 'Finished':
-        console.log('download finished');
+	    toast({
+		  description: `download finished`,
+		  variant: 'success',
+		});
         break;
     }
   });
-
-  console.log('update installed');
   await relaunch();
   }
 
