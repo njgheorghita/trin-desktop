@@ -12,3 +12,9 @@ This template should help get you started developing with Tauri + Vue 3 in Vite.
 
 ## Todo...
 - add selenium for testing (`https://v2.tauri.app/develop/tests/webdriver/example/selenium/`)
+
+
+## Releasing...
+- update the version in `tauri.conf.json` & merge to master
+- tag latest commit with the version number
+- push the tag
