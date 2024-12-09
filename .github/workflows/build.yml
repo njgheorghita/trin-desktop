@@ -17,11 +17,10 @@ jobs:
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
             binary_suffix: 'aarch64-apple-darwin.tar.gz'
-          # this platform needs testing...
-          #- platform: 'macos-latest' # for Intel based macs.
-            #args: '--target x86_64-apple-darwin'
-            #target: 'x86_64-apple-darwin'
-            #binary_suffix: 'x86_64-apple-darwin.tar.gz'
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
+            target: 'x86_64-apple-darwin'
+            binary_suffix: 'x86_64-apple-darwin.tar.gz'
           - platform: 'ubuntu-22.04'
             args: ''
             target: 'x86_64-unknown-linux-gnu'
@@ -46,21 +45,6 @@ jobs:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           keychain: build
-
-#      - name: Import Apple Developer Certificate
-        #if: matrix.platform == 'macos-latest'
-        #env:
-          #APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          #APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          #KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        #run: |
-          #echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-          #security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          #security default-keychain -s build.keychain
-          #security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          #security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          #security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          #security find-identity -v -p codesigning build.keychain
 
       - name: Verify Certificate
         if: matrix.platform == 'macos-latest'

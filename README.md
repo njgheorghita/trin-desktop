@@ -17,4 +17,5 @@ This template should help get you started developing with Tauri + Vue 3 in Vite.
 ## Releasing...
 - update the version in `tauri.conf.json` & merge to master
 - tag latest commit with the version number
-- push the tag
+- `git tag app-v*.*.*`
+- `git push origin app-v*.*.*`
