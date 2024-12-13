@@ -9,4 +9,5 @@ pub struct TrinConfig {
     // there might be a better way to handle these cases though
     pub httpPort: usize,
     pub storage: usize,
+    pub trustedBlockRoot: String,
 }

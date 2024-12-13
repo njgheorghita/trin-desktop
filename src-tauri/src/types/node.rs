@@ -9,6 +9,9 @@ pub struct NodeStats {
     pub pid: usize,
     pub state_data: SubnetworkDataLog,
     pub history_data: SubnetworkDataLog,
+    pub beacon_data: SubnetworkDataLog,
+    pub latest_finalized_block: u64,
+    pub latest_optimistic_block: u64,
 }
 
 // the scraped stats from trin's "trin_*: reports~ data:" log line
