@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatMemorySize } from '@/components/utils/formatMemory'
 import { useTrinStats } from '@/composables/useTrinStats'
-import { Loader2, Info } from 'lucide-vue-next'
+import { Info, Loader2 } from 'lucide-vue-next'
 
 const { trinStats } = useTrinStats()
 </script>
@@ -83,9 +83,9 @@ const { trinStats } = useTrinStats()
           <CardContent>
             <div class="text-2xl font-bold">
               <template v-if="trinStats.latestFinalizedBlock === 0">
-				<div class="flex justify-center">
+                <div class="flex justify-center">
                   <Loader2 class="h-6 w-6 animate-spin" />
-				</div>
+                </div>
               </template>
               <template v-else>
                 {{ trinStats.latestFinalizedBlock.toLocaleString() }}
@@ -112,9 +112,9 @@ const { trinStats } = useTrinStats()
           <CardContent>
             <div class="text-2xl font-bold">
               <template v-if="trinStats.latestFinalizedBlock === 0">
-				<div class="flex justify-center">
+                <div class="flex justify-center">
                   <Loader2 class="h-6 w-6 animate-spin" />
-				</div>
+                </div>
               </template>
               <template v-else>
                 {{ trinStats.latestOptimisticBlock.toLocaleString() }}

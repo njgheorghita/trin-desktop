@@ -106,7 +106,8 @@ watch(isDialogOpen, (value) => {
         Trusted block root to bootstrap beacon network sync.
       </p>
       <p class="text-xs text-muted-foreground">
-	    You can find the latest trusted block roots <a href="https://sync-mainnet.beaconcha.in/" target="_blank" class="text-blue-500">here</a>.
+        You can find the latest trusted block roots
+        <a href="https://sync-mainnet.beaconcha.in/" target="_blank" class="text-blue-500">here</a>.
       </p>
     </CardContent>
   </Card>
