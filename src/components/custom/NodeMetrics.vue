@@ -10,18 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatMemorySize } from '@/components/utils/formatMemory'
 import { useTrinStats } from '@/composables/useTrinStats'
-
-import { Info } from 'lucide-vue-next'
+import { Info, Loader2 } from 'lucide-vue-next'
 
 const { trinStats } = useTrinStats()
 </script>
 
 <template>
   <Tabs default-value="all" class="py-4">
-    <TabsList class="grid w-full grid-cols-3">
+    <TabsList class="grid w-full grid-cols-4">
       <TabsTrigger value="all">All</TabsTrigger>
       <TabsTrigger value="history">History</TabsTrigger>
       <TabsTrigger value="state">State</TabsTrigger>
+      <TabsTrigger value="beacon">Beacon</TabsTrigger>
     </TabsList>
     <TabsContent value="all">
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 py-4">
@@ -62,6 +62,64 @@ const { trinStats } = useTrinStats()
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">{{ trinStats.cpu.toFixed(2) }}%</div>
+          </CardContent>
+        </Card>
+
+        <!-- Latest Finalized Block -->
+        <Card class="p-4">
+          <CardHeader class="flex flex-row items-center justify-between pb-2">
+            <CardTitle class="text-sm font-medium">Latest Finalized Block</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info class="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Latest finalized block synced by the Trin client.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardHeader>
+          <CardContent>
+            <div class="text-2xl font-bold">
+              <template v-if="trinStats.latestFinalizedBlock === 0">
+                <div class="flex justify-center">
+                  <Loader2 class="h-6 w-6 animate-spin" />
+                </div>
+              </template>
+              <template v-else>
+                {{ trinStats.latestFinalizedBlock.toLocaleString() }}
+              </template>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Latest Optimistic Block -->
+        <Card class="p-4">
+          <CardHeader class="flex flex-row items-center justify-between pb-2">
+            <CardTitle class="text-sm font-medium">Latest Optimistic Block</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info class="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Latest optimistic block synced by the Trin client.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardHeader>
+          <CardContent>
+            <div class="text-2xl font-bold">
+              <template v-if="trinStats.latestFinalizedBlock === 0">
+                <div class="flex justify-center">
+                  <Loader2 class="h-6 w-6 animate-spin" />
+                </div>
+              </template>
+              <template v-else>
+                {{ trinStats.latestOptimisticBlock.toLocaleString() }}
+              </template>
+            </div>
           </CardContent>
         </Card>
 
@@ -145,6 +203,28 @@ const { trinStats } = useTrinStats()
         <ValidationsCard
           :validationsIn="trinStats.state.validationsIn"
           :validationsOut="trinStats.state.validationsOut"
+        />
+      </div>
+    </TabsContent>
+    <TabsContent value="beacon">
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 py-4">
+        <DataRadiusCard :radius="trinStats.beacon.radius" />
+        <ContentStorageCard
+          :contentCurrent="trinStats.beacon.contentCurrent"
+          :contentTotal="trinStats.beacon.contentTotal"
+        />
+        <ContentCountCard :count="trinStats.beacon.count" />
+        <OffersSentCard
+          :offersIn="trinStats.beacon.offersIn"
+          :offersOut="trinStats.beacon.offersOut"
+        />
+        <OffersReceivedCard
+          :acceptsIn="trinStats.beacon.acceptsIn"
+          :acceptsOut="trinStats.beacon.acceptsOut"
+        />
+        <ValidationsCard
+          :validationsIn="trinStats.beacon.validationsIn"
+          :validationsOut="trinStats.beacon.validationsOut"
         />
       </div>
     </TabsContent>

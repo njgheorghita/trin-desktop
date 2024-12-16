@@ -1,3 +1,4 @@
+use crate::commands::beacon::{portal_beaconFinalityUpdate, portal_beaconOptimisticUpdate};
 use crate::types::config::TrinConfig;
 use crate::types::node::SubnetworkDataLog;
 use crate::utils::node_rpc::check_trin_status;
@@ -29,7 +30,8 @@ pub async fn launch_trin<'l>(
         .expect("failed to create `trin` binary command")
         .args([
             "--web3-transport=http",
-            "--portal-subnetworks=history,state",
+            "--portal-subnetworks=history,state,beacon",
+            format!("--trusted-block-root={}", trin_config.trustedBlockRoot).as_str(),
             format!("--web3-http-address={}", web3_http_address).as_str(),
             format!("--mb={}", trin_config.storage).as_str(),
         ])
@@ -53,7 +55,7 @@ pub async fn launch_trin<'l>(
                             state.node_stats.history_data = log;
                         }
                         Err(e) => {
-                            warn!("Failed to parse log line: {}", e);
+                            warn!("Failed to parse log line: {e}");
                         }
                     }
                 } else if line.contains("trin_state: reports~ data:") {
@@ -65,10 +67,21 @@ pub async fn launch_trin<'l>(
                             state.node_stats.state_data = log;
                         }
                         Err(e) => {
-                            warn!("Failed to parse log line: {}", e);
+                            warn!("Failed to parse log line: {e}");
                         }
                     }
-                    info!("trin_history: reports~");
+                } else if line.contains("trin_beacon: reports~ data:") {
+                    let log = SubnetworkDataLog::parse_log_line(&line);
+                    match log {
+                        Ok(log) => {
+                            let state = app_clone.state::<Mutex<AppData>>();
+                            let mut state = state.lock().unwrap();
+                            state.node_stats.beacon_data = log;
+                        }
+                        Err(e) => {
+                            warn!("Failed to parse log line: {e}");
+                        }
+                    }
                 }
             }
         }
@@ -123,10 +136,11 @@ pub async fn launch_trin<'l>(
                     }
                 }
             }
-            println!(
-                "Port {}: {} process(es), Total CPU Usage: {:.1}%",
-                pid, process_count, total_cpu
-            );
+
+            // these requests can take some time to return, and we don't want to block
+            // this loop, so they're probably worth moving to a separate thread soon
+            let optimistic_update = portal_beaconOptimisticUpdate(trin_config.httpPort).await;
+            let finality_update = portal_beaconFinalityUpdate(trin_config.httpPort).await;
 
             // idk why but this has to happen before updating the trin stats
             if !check_trin_status(&trin_config.httpPort).await {
@@ -136,17 +150,32 @@ pub async fn launch_trin<'l>(
                 break;
             }
 
-            // update cpu in trin stats
+            // update cpu & latest finalized header in trin stats
             {
                 let state = app_clone.state::<Mutex<AppData>>();
                 let mut state = state.lock().unwrap();
                 state.node_stats.cpu = total_cpu as f32;
                 state.node_stats.pid = pid.into();
+                if let Ok(update) = finality_update {
+                    state.node_stats.latest_finalized_block = update
+                        .finalized_header_deneb()
+                        .unwrap()
+                        .execution
+                        .block_number;
+                }
+                if let Ok(update) = optimistic_update {
+                    state.node_stats.latest_optimistic_block = update
+                        .attested_header_deneb()
+                        .unwrap()
+                        .execution
+                        .block_number;
+                }
                 app_clone
                     .emit("trin-stats", state.node_stats.clone())
                     .expect("failed to emit event");
+                // use braces to drop the lock asap
             }
-            // drop mutex lock here asap
+
             sleep(Duration::from_secs(3));
         }
     });

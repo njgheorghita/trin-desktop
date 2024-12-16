@@ -31,15 +31,14 @@ const formSchema = toTypedSchema(
       .length(42)
       .regex(/^0x[a-fA-F0-9]{40}$/, {
         message: "Address must be a 42-character hexadecimal string starting with '0x'"
-      })
+      }),
+    blockNumber: z.number().int().positive()
   })
 )
 const form = useForm({
   validationSchema: formSchema
 })
-// this value is actually being ignored, and we're
-// using a hardcoded block hash inside the eth_getBalance call
-const blockHeight = ref(1000000)
+
 const accountValue = ref(null)
 
 const onSubmit = form.handleSubmit(async (values) => {
@@ -48,9 +47,7 @@ const onSubmit = form.handleSubmit(async (values) => {
     accountValue.value = await invoke('eth_getBalance', {
       trinConfig: config.value,
       address: values.address,
-      // this value is actually being ignored, and we're
-      // using a hardcoded block hash inside the eth_getBalance call
-      blockNumber: blockHeight.value
+      blockNumber: values.blockNumber
     })
   } catch (error) {
     toast({
@@ -82,11 +79,17 @@ const formattedBalance = computed(() => {
             <FormControl>
               <Input type="text" v-bind="field" />
             </FormControl>
-            <FormDescription>
-              Enter an address to check the balance.
-              <br />
-              Balance will be checked at block number {{ blockHeight }}.
-            </FormDescription>
+            <FormDescription> Enter an address to check the balance. </FormDescription>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <FormField v-slot="{ field }" name="blockNumber">
+          <FormItem>
+            <FormLabel>Block Number</FormLabel>
+            <FormControl>
+              <Input type="number" v-bind="field" />
+            </FormControl>
+            <FormDescription> The block number at which to look up the balance. </FormDescription>
             <FormMessage />
           </FormItem>
         </FormField>

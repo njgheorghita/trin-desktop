@@ -5,6 +5,8 @@ const trinStats = ref({
   cpu: 0,
   pid: 0,
   diskUsage: 0,
+  latestFinalizedBlock: 0,
+  latestOptimisticBlock: 0,
   state: {
     radius: 0,
     contentCurrent: 0,
@@ -28,6 +30,18 @@ const trinStats = ref({
     acceptsOut: 0,
     validationsIn: 0,
     validationsOut: 0
+  },
+  beacon: {
+    radius: 0,
+    contentCurrent: 0,
+    contentTotal: 0,
+    count: 0,
+    offersIn: 0,
+    offersOut: 0,
+    acceptsIn: 0,
+    acceptsOut: 0,
+    validationsIn: 0,
+    validationsOut: 0
   }
 })
 
@@ -38,6 +52,8 @@ export function useTrinStats() {
       pid: stats.payload.pid,
       // using state data here, though history should return the same value
       diskUsage: stats.payload.stateData.disk_usage,
+      latestFinalizedBlock: stats.payload.latestFinalizedBlock,
+      latestOptimisticBlock: stats.payload.latestOptimisticBlock,
       state: {
         radius: stats.payload.stateData.radius,
         contentCurrent: stats.payload.stateData.content_current,
@@ -61,6 +77,18 @@ export function useTrinStats() {
         acceptsOut: stats.payload.historyData.accepts_out,
         validationsIn: stats.payload.historyData.validations_in,
         validationsOut: stats.payload.historyData.validations_out
+      },
+      beacon: {
+        radius: stats.payload.beaconData.radius,
+        contentCurrent: stats.payload.beaconData.content_current,
+        contentTotal: stats.payload.beaconData.content_total,
+        count: stats.payload.beaconData.count,
+        offersIn: stats.payload.beaconData.offers_in,
+        offersOut: stats.payload.beaconData.offers_out,
+        acceptsIn: stats.payload.beaconData.accepts_in,
+        acceptsOut: stats.payload.beaconData.accepts_out,
+        validationsIn: stats.payload.beaconData.validations_in,
+        validationsOut: stats.payload.beaconData.validations_out
       }
     })
   })
