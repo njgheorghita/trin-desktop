@@ -26,7 +26,13 @@ const formSchema = toTypedSchema(
       .length(42)
       .regex(/^0x[a-fA-F0-9]{40}$/, {
         message: "Address must be a 42-character hexadecimal string starting with '0x'"
+      }),
+    blockNumber: z
+      .string()
+      .regex(/^(0x[0-9a-fA-F]+|[0-9]+|latest|earliest|pending)$/, {
+        message: "Block number must be a number, hex value, or 'latest'/'earliest'/'pending'"
       })
+      .default('latest')
   })
 )
 
@@ -71,15 +77,18 @@ const onSubmit = form.handleSubmit(async (values) => {
     const [balance, nonce, code] = await Promise.all([
       invoke('eth_getBalance', {
         trinConfig: config.value,
-        address: values.address
+        address: values.address,
+        blockNumber: values.blockNumber
       }),
       invoke('eth_getTransactionCount', {
         trinConfig: config.value,
-        address: values.address
+        address: values.address,
+        blockNumber: values.blockNumber
       }),
       invoke('eth_getCode', {
         trinConfig: config.value,
-        address: values.address
+        address: values.address,
+        blockNumber: values.blockNumber
       })
     ])
 
@@ -114,14 +123,22 @@ const formattedBalance = computed(() => {
     <CardHeader>
       <CardTitle>Account Information</CardTitle>
     </CardHeader>
-    <CardContent class="grid gap-4 py-6"> 
-      <form @submit.prevent="onSubmit">
-
+    <CardContent class="pb-16"> 
+      <form @submit.prevent="onSubmit" class="space-y-6">
         <FormField v-slot="{ field }" name="address">
           <FormItem class="max-w-2xl"> 
             <FormLabel>Address</FormLabel>
             <FormControl>
-              <Input type="text" v-bind="field" />
+              <Input type="text" v-bind="field" placeholder="Input the desired address" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <FormField v-slot="{ field }" name="blockNumber">
+          <FormItem class="max-w-2xl">
+            <FormLabel>Block Number</FormLabel>
+            <FormControl>
+              <Input type="text" v-bind="field" placeholder="Block number, hex value, or 'latest'/'earliest'/'pending'" />
             </FormControl>
             <FormMessage />
           </FormItem>
