@@ -64,3 +64,25 @@ pub async fn eth_getBalance(
         .await
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+#[allow(non_snake_case)]
+pub async fn eth_getCode(
+    trin_config: TrinConfig,
+    address: String,
+    block_number: u64,
+) -> Result<String, String> {
+    info!("eth_getCode: {:?} @ {:?}", address, block_number);
+    let endpoint = format!("http://localhost:{}", trin_config.httpPort);
+    let client = HttpClientBuilder::default()
+        .build(&endpoint)
+        .map_err(|e| e.to_string())?;
+    let raw_address = hex_decode(&address).map_err(|e| e.to_string())?;
+    let address = Address::from_slice(&raw_address);
+    let block_number = BlockNumberOrTag::Number(block_number.into());
+    let block_id = BlockId::Number(block_number);
+    client
+        .get_code(address, block_id)  
+        .await
+        .map_err(|e| e.to_string())
+        .map(|bytes| format!("0x{}", hex::encode(bytes.as_ref())))  }
