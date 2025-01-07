@@ -2,6 +2,14 @@
 
 This template should help get you started developing with Tauri + Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
+## Dependencies...
+
+- install trin client [instructions](https://ethereum.github.io/trin/introduction/quickstart.html)
+  - move the trin client executeable to the `src-tauri` directory
+    - the executable may need to be renamed if it can't be found
+- use node V20 or lower to handle tailwind config CJS modules
+- rustup needs to be installed
+  - `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 
 ## Dev...
 
@@ -11,11 +19,17 @@ This template should help get you started developing with Tauri + Vue 3 in Vite.
 - `https://www.shadcn-vue.com/docs/introduction.html` for all the js components
 
 ## Todo...
+
 - add selenium for testing (`https://v2.tauri.app/develop/tests/webdriver/example/selenium/`)
 
-
 ## Releasing...
+
 - update the version in `tauri.conf.json` & merge to master
 - tag latest commit with the version number
 - `git tag app-v*.*.*`
 - `git push origin app-v*.*.*`
+
+# Helpful info
+
+- **Do not run trin client at the same times as trin-desktop**
+- [Trin supported JSON RPC methods](https://github.com/ethereum/trin/blob/master/ethportal-api/src/eth.rs)
