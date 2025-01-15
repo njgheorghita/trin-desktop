@@ -6,7 +6,8 @@ This template should help get you started developing with Tauri + Vue 3 in Vite.
 
 - install trin client [instructions](https://ethereum.github.io/trin/introduction/quickstart.html)
   - move the trin client executeable to the `src-tauri` directory
-    - the executable may need to be renamed if it can't be found
+    - the executable needs to be renamed to include your systems `-$TARGET_TRIPLE` suffix. 
+    - instructions to rename the executable with your system's suffix are [here](https://v2.tauri.app/develop/sidecar/)
 - use node V20 or lower to handle tailwind config CJS modules
 - rustup needs to be installed
   - `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
@@ -17,10 +18,6 @@ This template should help get you started developing with Tauri + Vue 3 in Vite.
 - `npm run tauri dev`
 - `npm run lint` (optional)
 - `https://www.shadcn-vue.com/docs/introduction.html` for all the js components
-
-## Todo...
-
-- add selenium for testing (`https://v2.tauri.app/develop/tests/webdriver/example/selenium/`)
 
 ## Releasing...
 
