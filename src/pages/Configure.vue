@@ -1,5 +1,6 @@
 <template>
   <PageLayout>
+    <TrustedBlockRoot />
     <StorageAllocation />
     <HttpPortMonitor />
     <Autostart />
@@ -14,5 +15,6 @@
 import Autostart from '@/components/custom/config/Autostart.vue'
 import HttpPortMonitor from '@/components/custom/config/HttpPortMonitor.vue'
 import StorageAllocation from '@/components/custom/config/StorageAllocation.vue'
+import TrustedBlockRoot from '@/components/custom/config/TrustedBlockRoot.vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 </script>

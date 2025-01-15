@@ -1,6 +1,6 @@
 [package]
 name = "trin-desktop"
-version = "0.1.0"
+version = "0.1.11"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -19,7 +19,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 alloy = { version = "0.4.2", default-features = false, features = ["std"] }
-ethportal-api = "0.3.0"
+ethportal-api = "0.4.0"
 log = "0.4"
 regex = "1.11.1"
 rstest = "0.23.0"

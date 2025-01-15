@@ -1,12 +1,18 @@
 <script setup>
 import EthereumLogo from '@/components/custom/EthereumLogo.vue'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTrinConfig } from '@/composables/useTrinConfig'
 import { useTrinProcess } from '@/composables/useTrinProcess'
 import { Loader2, Play, SquareX } from 'lucide-vue-next'
+import { computed } from 'vue'
 
 const { trinStatus, isLaunching, toggleTrinProcess } = useTrinProcess()
+const { config } = useTrinConfig()
+
+const showLaunchButton = computed(() => config.value.trustedBlockRoot !== '0x')
 </script>
 
 <template>
@@ -23,7 +29,12 @@ const { trinStatus, isLaunching, toggleTrinProcess } = useTrinProcess()
       <div class="flex justify-center items-center">
         <EthereumLogo :is-open="trinStatus === 'running'" />
       </div>
-      <div class="flex space-x-2">
+      <Alert v-if="!showLaunchButton" variant="warning">
+        <AlertDescription>
+          A trusted root value needs to be set on the Configure page before you can launch Trin.
+        </AlertDescription>
+      </Alert>
+      <div v-else class="flex space-x-2">
         <Button
           :variant="trinStatus === 'running' ? 'destructive' : 'default'"
           :disabled="isLaunching"
