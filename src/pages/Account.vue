@@ -1,9 +1,11 @@
 <template>
-  <div class="container mx-auto space-y-4">
+  <PageLayout>
     <GetAddressInfo />
-  </div>
+  </PageLayout>
+  
 </template>
 
 <script setup>
 import GetAddressInfo from '@/components/custom/account/GetAddressInfo.vue';
+import PageLayout from '@/components/layouts/PageLayout.vue'
 </script>
