@@ -34,7 +34,14 @@ const formSchema = toTypedSchema(
         message:
           "Address must be a 42-character hexadecimal string starting with '0x'",
       }),
-    blockNumber: z.number().int().positive(),
+    blockNumber: z.union([
+      z.number().int().positive(),
+      z.string()
+        .transform(val => val.toLowerCase())
+        .pipe(
+          z.enum(["latest", "earliest", "pending", "safe", "finalized"])
+        )
+    ]).default("latest"),
   }),
 );
 
@@ -133,10 +140,19 @@ const formattedBalance = computed(() => {
             <FormItem>
               <FormLabel>Block Number</FormLabel>
               <FormControl>
-                <Input type="number" v-bind="field" />
+                <Input 
+                  v-bind="field" 
+                  :type="isNaN(field.value) ? 'text' : 'number'"
+                  :value="field.value"
+                  @input="e => field.onChange(
+                    e.target.value === '' ? 'latest' : 
+                    isNaN(e.target.value) ? e.target.value : 
+                    parseInt(e.target.value)
+                  )"
+                />
               </FormControl>
               <FormDescription>
-                The block number at which to look up the balance.
+                Enter a block number or use "latest", "earliest", "pending", "safe", or "finalized"
               </FormDescription>
               <FormMessage />
             </FormItem>
