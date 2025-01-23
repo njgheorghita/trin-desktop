@@ -14,18 +14,27 @@ pub enum BlockNumberOrTagInput {
     Tag(String),
 }
 
-impl From<BlockNumberOrTagInput> for BlockNumberOrTag {
-    fn from(input: BlockNumberOrTagInput) -> Self {
+// todo: any component that uses the blocknumber needs to be updated 
+// to use the new blockNumberOrTagInput once trin supports it
+#[derive(Debug)]
+pub struct InvalidBlockTagError(String);
+
+impl std::fmt::Display for InvalidBlockTagError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Invalid block tag: {}", self.0)
+    }
+}
+
+impl std::error::Error for InvalidBlockTagError {}
+
+impl TryFrom<BlockNumberOrTagInput> for BlockNumberOrTag {
+    type Error = InvalidBlockTagError;
+
+    fn try_from(input: BlockNumberOrTagInput) -> Result<Self, Self::Error> {
         match input {
-            BlockNumberOrTagInput::Number(n) => BlockNumberOrTag::Number(n.into()),
-            BlockNumberOrTagInput::Tag(s) => match s.as_str() {
-                "latest" => BlockNumberOrTag::Latest,
-                "earliest" => BlockNumberOrTag::Earliest,
-                "pending" => BlockNumberOrTag::Pending,
-                "safe" => BlockNumberOrTag::Safe,
-                "finalized" => BlockNumberOrTag::Finalized,
-                _ => BlockNumberOrTag::Latest, // fallback to latest if invalid tag
-            },
+            BlockNumberOrTagInput::Number(n) => Ok(BlockNumberOrTag::Number(n)),
+            BlockNumberOrTagInput::Tag(s) => BlockNumberOrTag::from_str(&s)
+                .map_err(|_| InvalidBlockTagError(s)),
         }
     }
 }
@@ -80,7 +89,7 @@ pub async fn eth_getBalance(
         .map_err(|e| e.to_string())?;
     let raw_address = hex_decode(&address).map_err(|e| e.to_string())?;
     let address = Address::from_slice(&raw_address);
-    let block_number: BlockNumberOrTag = block_number.into();
+    let block_number: BlockNumberOrTag = block_number.try_into().map_err(|e: InvalidBlockTagError| e.to_string())?;
     let block_id = BlockId::Number(block_number);
     client
         .get_balance(address, block_id)
@@ -102,10 +111,10 @@ pub async fn eth_getCode(
         .map_err(|e| e.to_string())?;
     let raw_address = hex_decode(&address).map_err(|e| e.to_string())?;
     let address = Address::from_slice(&raw_address);
-    let block_number: BlockNumberOrTag = block_number.into();
+    let block_number: BlockNumberOrTag = block_number.try_into().map_err(|e: InvalidBlockTagError| e.to_string())?;
     let block_id = BlockId::Number(block_number);
     client
-        .get_code(address, block_id)  
+        .get_code(address, block_id)
         .await
         .map_err(|e| e.to_string())
         .map(|bytes| format!("0x{}", hex::encode(bytes.as_ref())))

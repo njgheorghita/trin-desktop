@@ -34,14 +34,9 @@ const formSchema = toTypedSchema(
         message:
           "Address must be a 42-character hexadecimal string starting with '0x'",
       }),
-    blockNumber: z.union([
-      z.number().int().positive(),
-      z.string()
-        .transform(val => val.toLowerCase())
-        .pipe(
-          z.enum(["latest", "earliest", "pending", "safe", "finalized"])
-        )
-    ]).default("latest"),
+    blockNumber: z.number().int().positive({
+      message: "Block number must be a positive integer"
+    }),
   }),
 );
 
@@ -88,7 +83,7 @@ const onSubmit = form.handleSubmit(async (values) => {
         address: values.address,
         blockNumber: values.blockNumber,
       }),
-      //todo add eth_getTransactionCount once it is supported by trin so nonce can be displayed
+      //todo: add eth_getTransactionCount once it is supported by trin so nonce can be displayed
     ]);
 
     accountData.value = {
@@ -141,18 +136,18 @@ const formattedBalance = computed(() => {
               <FormLabel>Block Number</FormLabel>
               <FormControl>
                 <Input 
-                  v-bind="field" 
-                  :type="isNaN(field.value) ? 'text' : 'number'"
+                  type="number"
+                  v-bind="field"
                   :value="field.value"
                   @input="e => field.onChange(
-                    e.target.value === '' ? 'latest' : 
-                    isNaN(e.target.value) ? e.target.value : 
+                    e.target.value === '' ? undefined : 
                     parseInt(e.target.value)
                   )"
+                  min="1"
                 />
               </FormControl>
               <FormDescription>
-                Enter a block number or use "latest", "earliest", "pending", "safe", or "finalized"
+                Enter the desired block number
               </FormDescription>
               <FormMessage />
             </FormItem>
