@@ -32,7 +32,9 @@ const formSchema = toTypedSchema(
       .regex(/^0x[a-fA-F0-9]{40}$/, {
         message: "Address must be a 42-character hexadecimal string starting with '0x'"
       }),
-    blockNumber: z.number().int().positive()
+    blockNumber: z.number().int().positive({
+      message: "Block number must be a positive integer"
+    }),
   })
 )
 const form = useForm({
@@ -87,9 +89,20 @@ const formattedBalance = computed(() => {
           <FormItem>
             <FormLabel>Block Number</FormLabel>
             <FormControl>
-              <Input type="number" v-bind="field" />
+              <Input 
+                type="number"
+                v-bind="field"
+                :value="field.value"
+                @input="e => field.onChange(
+                  e.target.value === '' ? undefined : 
+                  parseInt(e.target.value)
+                )"
+                min="1"
+              />
             </FormControl>
-            <FormDescription> The block number at which to look up the balance. </FormDescription>
+            <FormDescription>
+              Enter the desired block number
+            </FormDescription>
             <FormMessage />
           </FormItem>
         </FormField>

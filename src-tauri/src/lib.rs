@@ -88,6 +88,7 @@ pub fn run() {
             eth::eth_getBlockByNumber,
             eth::eth_getBlockByHash,
             eth::eth_getBalance,
+            eth::eth_getCode,
         ])
         // Prevent the app from exiting when the window is closed
         .on_window_event(|window, event| match event {
